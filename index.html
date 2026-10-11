@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>今</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="なう">
+<meta name="theme-color" content="#16181a">
+<script>
+(function () {
+  try {
+    var t = localStorage.getItem("daysalive_theme_v1");
+    if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+})();
+</script>
+<style>
+@font-face{font-family:"ChakraPetch";src:url(fonts/ChakraPetch-SemiBold.ttf) format("truetype");font-weight:600;font-display:swap}
+@font-face{font-family:"SmoochSans";src:url(fonts/SmoochSans.ttf) format("truetype");font-weight:1 900;font-display:swap}
+[hidden]{display:none !important}
+:root{
+  --bg:#f6f5f1; --fg:#222; --muted:#5b5b5b; --card:#fff; --line:#d8d5cc;
+  --accent:#1f6f5c; --accent-fg:#fff; --warn-bg:#fff3d6; --warn-fg:#5a3d00; --danger:#a02828;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16181a; --fg:#ececec; --muted:#a8a8a8; --card:#22262a; --line:#3a4046;
+    --accent:#59c2a5; --accent-fg:#0d1f1a; --warn-bg:#3a2e12; --warn-fg:#f3dca0; --danger:#ff8a8a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16181a; --fg:#ececec; --muted:#a8a8a8; --card:#22262a; --line:#3a4046;
+  --accent:#59c2a5; --accent-fg:#0d1f1a; --warn-bg:#3a2e12; --warn-fg:#f3dca0; --danger:#ff8a8a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;line-height:1.7;font-size:1rem}
+.page{max-width:32rem;margin:0 auto;padding:1.5rem 1rem 3rem}
+.title{font-size:1.25rem;margin:0 0 1rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:1.25rem 1rem;margin-bottom:1rem}
+.count{text-align:center}
+.count__num{margin:.25rem 0;font-size:3.75rem;line-height:1.2;color:var(--accent);word-break:break-all;font-variant-numeric:tabular-nums;font-family:"ChakraPetch",sans-serif;font-weight:600}
+.count__unit{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:1.25rem;font-weight:700;margin-left:.25rem}
+.count__sub{margin:0;color:var(--muted);font-size:1rem}
+.field__label{display:block;font-weight:700;margin:0 0 .5rem}
+.field__input{width:100%;min-height:44px;padding:.5rem .75rem;font-size:1rem;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:1rem}
+.top .title{margin:0}
+.theme-switch{display:flex;gap:.25rem}
+.theme-switch .btn{padding:.5rem .75rem}
+.theme-switch .btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700}
+.age-row{display:flex;align-items:center;justify-content:center;gap:.5rem}
+.age-input{width:6rem;text-align:center;font-size:1.25rem}
+.age-suffix{font-size:1.25rem;font-weight:700}
+.age__made{margin:.5rem 0 0;text-align:center}
+.age__msg{text-align:center;margin:.5rem 0 0}
+.age__big{text-align:center}
+.age__big[data-state="passed"]{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-size:1.5rem;font-weight:700}
+.hms{display:flex;justify-content:center;gap:1rem;font-family:"SmoochSans",sans-serif;font-weight:500;font-size:2.25rem;line-height:1.2;color:var(--accent);font-variant-numeric:tabular-nums}
+.hms__u{font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;font-weight:700;font-size:1rem;margin-left:.125rem}
+.ymd{display:flex;gap:.5rem}
+.ymd__item{display:flex;align-items:center;gap:.25rem;flex:1 1 0;min-width:0}
+.ymd__item--y{flex:1.6 1 0}
+.ymd__item .field__input{text-align:center;padding:.5rem .25rem}
+.ymd__unit{flex:none}
+.btn{min-width:44px;min-height:44px;padding:.5rem 1rem;font-size:1rem;font-family:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+.btn--primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700}
+.btn--danger{color:var(--danger);border-color:var(--danger)}
+.row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+.msg{margin:.5rem 0 0;color:var(--danger);font-size:1rem}
+.note{color:var(--muted);font-size:1rem;margin:.5rem 0 0}
+.warn{background:var(--warn-bg);color:var(--warn-fg);border-radius:8px;padding:.75rem 1rem;margin-bottom:1rem}
+.h2{font-size:1.125rem;margin:0 0 .5rem}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="top">
+    <h1 class="title">今</h1>
+    <div class="theme-switch" role="group" aria-label="表示の明るさ">
+      <button type="button" class="btn" data-theme-value="light" aria-pressed="false">白</button>
+      <button type="button" class="btn" data-theme-value="dark" aria-pressed="false">黒</button>
+    </div>
+  </div>
+
+  <p class="warn" id="warn-storage" hidden>この環境では記録を保存できません。生年月日は閉じると消えます（プライベートモードなど）。</p>
+  <p class="warn" id="warn-ios" hidden>iPhoneでは、Safariの共有ボタンから「ホーム画面に追加」して、そこから開いてください。そのままだと記録が消えることがあります。</p>
+
+  <section class="card" id="view-input">
+    <p class="field__label" id="birth-label">生年月日</p>
+    <div class="ymd" role="group" aria-labelledby="birth-label">
+      <div class="ymd__item ymd__item--y">
+        <input class="field__input" id="b-y" type="text" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="1990" aria-label="年">
+        <span class="ymd__unit">年</span>
+      </div>
+      <div class="ymd__item">
+        <input class="field__input" id="b-m" type="text" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="4" aria-label="月">
+        <span class="ymd__unit">月</span>
+      </div>
+      <div class="ymd__item">
+        <input class="field__input" id="b-d" type="text" inputmode="numeric" maxlength="2" autocomplete="off" placeholder="15" aria-label="日">
+        <span class="ymd__unit">日</span>
+      </div>
+    </div>
+    <p class="msg" id="birth-msg" role="alert" hidden></p>
+    <div class="row">
+      <button type="button" class="btn btn--primary" id="btn-save">日数を出す</button>
+    </div>
+    <p class="note">生年月日はこの端末の中にだけ保存されます。外には送られません。</p>
+  </section>
+
+  <section class="card count" id="view-count" hidden>
+    <p class="count__num"><span id="num">0</span><span class="count__unit">日</span></p>
+    <div class="hms">
+      <span><span id="hh">0</span><span class="hms__u">時間</span></span>
+      <span><span id="mm">0</span><span class="hms__u">分</span></span>
+      <span><span id="ss">0</span><span class="hms__u">秒</span></span>
+    </div>
+  </section>
+
+  <section class="card" id="view-age" hidden>
+    <div class="age-row">
+      <input class="field__input age-input" id="age-in" type="text" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="年齢（1〜150）" placeholder="80">
+      <span class="age-suffix">歳</span>
+    </div>
+    <p class="age__made" id="age-made">まであと</p>
+    <p class="note age__msg" id="age-msg" role="status" hidden></p>
+    <div id="age-box">
+      <p class="count__num age__big" id="age-day"><span id="age-num">0</span><span class="count__unit" id="age-unit-label">日</span></p>
+      <div class="hms" id="age-hms">
+        <span><span id="age-hh">0</span><span class="hms__u">時間</span></span>
+        <span><span id="age-mm">0</span><span class="hms__u">分</span></span>
+        <span><span id="age-ss">0</span><span class="hms__u">秒</span></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="view-manage" hidden>
+    <p class="count__sub" id="since"></p>
+    <div class="row" id="row-normal">
+      <button type="button" class="btn" id="btn-change">生年月日を変える</button>
+      <button type="button" class="btn btn--danger" id="btn-clear">消す</button>
+    </div>
+    <div class="row" id="row-confirm" hidden>
+      <span class="note" style="width:100%">保存した生年月日を消します。よいですか。</span>
+      <button type="button" class="btn btn--danger" id="btn-clear-yes">消す</button>
+      <button type="button" class="btn" id="btn-clear-no">やめる</button>
+    </div>
+  </section>
+
+  <section class="card" id="view-badge" hidden>
+    <h2 class="h2">アイコンに日数を出す</h2>
+    <p class="note">ホーム画面のアイコンの角に日数を表示します。数字が更新されるのは、このアプリを開いたときです。</p>
+    <div class="row">
+      <button type="button" class="btn" id="btn-badge">バッジを有効にする</button>
+    </div>
+    <p class="note" id="badge-msg" hidden></p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var KEY = "daysalive_v1";
+  var $ = function (id) { return document.getElementById(id); };
+  var canStore = true;
+
+  // 保存の読み書き（失敗しても黙って死なない）
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      var obj = JSON.parse(raw);
+      if (!obj || typeof obj.birth !== "string") return null;
+      return parseBirth(obj.birth) ? obj.birth : null;   // 壊れたデータは捨てる
+    } catch (e) { return null; }
+  }
+  function save(birth) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({ birth: birth }));
+      return localStorage.getItem(KEY) !== null;
+    } catch (e) { return false; }
+  }
+  function clearSaved() { try { localStorage.removeItem(KEY); } catch (e) {} }
+  try { localStorage.setItem(KEY + "_t", "1"); localStorage.removeItem(KEY + "_t"); } catch (e) { canStore = false; }
+
+  // "YYYY-MM-DD" を検査して {y,m,d} を返す。おかしければ null
+  function parseBirth(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s || "");
+    if (!m) return null;
+    var y = +m[1], mo = +m[2], d = +m[3];
+    var t = new Date(y, mo - 1, d);
+    if (t.getFullYear() !== y || t.getMonth() !== mo - 1 || t.getDate() !== d) return null;
+    if (y < 1900) return null;
+    var now = new Date();
+    if (t > new Date(now.getFullYear(), now.getMonth(), now.getDate())) return null;  // 未来は不可
+    return { y: y, m: mo, d: d };
+  }
+
+  // 生まれた日の0時を起点にした日・時間・分・秒（ミリ秒を分解する）
+  function bornMs(b) { return new Date(b.y, b.m - 1, b.d).getTime(); }
+  function split(ms) {
+    var t = Math.floor(ms / 1000);
+    return { d: Math.floor(t / 86400), h: Math.floor(t % 86400 / 3600), m: Math.floor(t % 3600 / 60), s: t % 60 };
+  }
+
+  var currentBirth = null;
+
+  // 入力欄を数字だけにする（全角数字は半角に直し、それ以外は捨てる）
+  function digitsOnly(el) {
+    el.value = el.value.replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/\D/g, "");
+  }
+
+  // 3つの欄 <-> "YYYY-MM-DD"
+  function joinBirth(y, m, d) {
+    if (!/^\d{4}$/.test(y) || !/^\d{1,2}$/.test(m) || !/^\d{1,2}$/.test(d)) return "";
+    return y + "-" + (m.length < 2 ? "0" : "") + m + "-" + (d.length < 2 ? "0" : "") + d;
+  }
+  function fillBirth(s) {
+    var b = s ? parseBirth(s) : null;
+    $("b-y").value = b ? b.y : ""; $("b-m").value = b ? b.m : ""; $("b-d").value = b ? b.d : "";
+  }
+
+  function show(which) {
+    $("view-input").hidden = which !== "input";
+    $("view-count").hidden = which !== "count";
+    $("view-manage").hidden = which !== "count";
+    if (which !== "count") setAgeBlock(false);
+    $("view-badge").hidden = which !== "count" || !badgeSupported();
+  }
+
+  function render() {
+    var b = currentBirth ? parseBirth(currentBirth) : null;
+    if (!b) { stopSecs(); show("input"); return; }
+    var n = split(Date.now() - bornMs(b)).d;
+    $("since").textContent = b.y + "年" + b.m + "月" + b.d + "日 生まれ";
+    show("count");
+    renderNum();
+    if (!document.hidden) startSecs();
+    updateBadge(n);
+  }
+
+  // 年齢（1〜150歳）を入力。その年齢の誕生日の0時までの残り。過ぎていたら「過ぎています」。2/29生まれの平年は3/1
+  var AGE_KEY = "daysalive_age_v1";
+  var AGE_MIN = 1, AGE_MAX = 150;
+  var selAge = 80;
+  try { var sa = parseInt(localStorage.getItem(AGE_KEY), 10); if (sa >= AGE_MIN && sa <= AGE_MAX) selAge = sa; } catch (e) {}
+  var ageInit = false;
+
+  function setAgeBlock(on) { $("view-age").hidden = !on; }
+
+  function targetOf(b, age) { return new Date(b.y + age, b.m - 1, b.d); }
+
+  // 入力欄の値を読む。1〜150の整数ならその数、そうでなければ null
+  function readAge() {
+    var t = $("age-in").value;
+    if (!/^\d{1,3}$/.test(t)) return null;
+    var n = parseInt(t, 10);
+    return n >= AGE_MIN && n <= AGE_MAX ? n : null;
+  }
+
+  function renderAge(b) {
+    var inp = $("age-in"), msg = $("age-msg"), box = $("age-box");
+    if (!ageInit) { inp.value = String(selAge); ageInit = true; }
+    setAgeBlock(true);
+    var age = readAge();
+    if (age === null) {
+      box.hidden = true;
+      msg.textContent = AGE_MIN + "〜" + AGE_MAX + "の数字を入れてください。"; msg.hidden = false;
+      return;
+    }
+    msg.hidden = true; box.hidden = false;
+    $("age-made").hidden = false;
+    var remainMs = targetOf(b, age).getTime() - Date.now();
+    var day = $("age-day");
+    if (remainMs <= 0) {
+      day.setAttribute("data-state", "passed");
+      $("age-made").hidden = true; $("age-hms").hidden = true;
+      $("age-num").textContent = "過ぎています"; $("age-unit-label").textContent = "";
+      return;
+    }
+    day.removeAttribute("data-state");
+    $("age-hms").hidden = false; $("age-unit-label").textContent = "日";
+    var p = split(remainMs);
+    $("age-num").textContent = p.d.toLocaleString("ja-JP");
+    $("age-hh").textContent = p.h; $("age-mm").textContent = p.m; $("age-ss").textContent = p.s;
+  }
+  $("age-in").addEventListener("input", function () {
+    digitsOnly(this);
+    var n = readAge();
+    if (n !== null) {
+      selAge = n;
+      try { localStorage.setItem(AGE_KEY, String(n)); } catch (e) {}
+    }
+    var b = currentBirth && parseBirth(currentBirth);
+    if (b) renderAge(b);
+  });
+
+  function renderNum() {
+    var b = currentBirth && parseBirth(currentBirth);
+    if (!b) return;
+    if ($("view-count").hidden) return;   // 入力画面のあいだは描かない（1秒ごとの更新で年齢ブロックが出てしまうため）
+    var p = split(Date.now() - bornMs(b));
+    $("num").textContent = p.d.toLocaleString("ja-JP");
+    $("hh").textContent = p.h; $("mm").textContent = p.m; $("ss").textContent = p.s;
+    renderAge(b);
+  }
+  var secTimer = null;
+  function startSecs() {
+    if (secTimer !== null) return;
+    secTimer = setInterval(renderNum, 1000);
+  }
+  function stopSecs() {
+    if (secTimer !== null) { clearInterval(secTimer); secTimer = null; }
+  }
+
+  // バッジ（対応していれば）
+  function badgeSupported() { return typeof navigator.setAppBadge === "function"; }
+  function updateBadge(n) {
+    if (!badgeSupported()) return;
+    try { navigator.setAppBadge(n).catch(function () {}); } catch (e) {}
+  }
+
+  $("btn-save").addEventListener("click", function () {
+    var msg = $("birth-msg");
+    var v = joinBirth($("b-y").value, $("b-m").value, $("b-d").value);
+    if (!parseBirth(v)) {
+      msg.textContent = "正しい生年月日を入れてください（未来の日付や1900年より前は使えません）。";
+      msg.hidden = false; return;
+    }
+    msg.hidden = true;
+    currentBirth = v;
+    if (!save(v)) $("warn-storage").hidden = false;
+    render();
+  });
+  $("btn-change").addEventListener("click", function () {
+    fillBirth(currentBirth); $("birth-msg").hidden = true; show("input");
+  });
+  $("btn-clear").addEventListener("click", function () { $("row-normal").hidden = true; $("row-confirm").hidden = false; });
+  $("btn-clear-no").addEventListener("click", function () { $("row-normal").hidden = false; $("row-confirm").hidden = true; });
+  $("btn-clear-yes").addEventListener("click", function () {
+    clearSaved(); currentBirth = null; fillBirth(null);
+    $("row-normal").hidden = false; $("row-confirm").hidden = true;
+    if (typeof navigator.clearAppBadge === "function") { try { navigator.clearAppBadge(); } catch (e) {} }
+    render();
+  });
+  $("btn-badge").addEventListener("click", function () {
+    var out = $("badge-msg"); out.hidden = false;
+    if (!window.Notification || !Notification.requestPermission) {
+      out.textContent = "この環境では通知の許可を出せません。ホーム画面に追加したアプリから開いてください。"; return;
+    }
+    Notification.requestPermission().then(function (p) {
+      if (p === "granted") { out.textContent = "有効にしました。"; render(); }
+      else out.textContent = "許可されませんでした。iPhoneの設定アプリの通知から許可できます。";
+    }).catch(function () { out.textContent = "許可を取れませんでした。"; });
+  });
+
+  // 日付をまたいだら描き直す（復帰時＋定期）
+  var shown = null;
+  function tick() {
+    var b = currentBirth && parseBirth(currentBirth);
+    var t = new Date().toDateString();
+    if (b && t !== shown) { shown = t; render(); }
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { stopSecs(); return; }
+    tick(); renderNum();
+    if (currentBirth) startSecs();
+  });
+  setInterval(tick, 60000);
+
+  // 白／黒の切り替え（未選択のときは端末の設定に従う）
+  function effectiveTheme() {
+    var t = document.documentElement.getAttribute("data-theme");
+    if (t === "light" || t === "dark") return t;
+    return window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  }
+  function markTheme() {
+    var cur = effectiveTheme(), tb = document.querySelectorAll(".theme-switch .btn");
+    for (var i = 0; i < tb.length; i++) tb[i].setAttribute("aria-pressed", tb[i].getAttribute("data-theme-value") === cur ? "true" : "false");
+  }
+  var tbtns = document.querySelectorAll(".theme-switch .btn");
+  for (var ti = 0; ti < tbtns.length; ti++) {
+    tbtns[ti].addEventListener("click", function () {
+      var t = this.getAttribute("data-theme-value");
+      document.documentElement.setAttribute("data-theme", t);
+      try { localStorage.setItem("daysalive_theme_v1", t); } catch (e) {}
+      markTheme();
+    });
+  }
+  markTheme();
+
+  // 起動
+  ["b-y", "b-m", "b-d"].forEach(function (id) {
+    $(id).addEventListener("input", function () { digitsOnly(this); });
+  });
+  if (!canStore) $("warn-storage").hidden = false;
+  var isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  var standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  if (isIOS && !standalone) $("warn-ios").hidden = false;
+  currentBirth = load();
+  shown = new Date().toDateString();
+  render();
+})();
+</script>
+</body>
+</html>
